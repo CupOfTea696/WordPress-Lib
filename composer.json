@@ -29,6 +29,9 @@
     "autoload": {
         "psr-4": {
             "CupOfTea\\WordPress\\": "src/"
-        }
+        },
+        "files": [
+            "app/helpers.php"
+        ]
     }
 }
