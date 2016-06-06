@@ -31,7 +31,7 @@
             "CupOfTea\\WordPress\\": "src/"
         },
         "files": [
-            "app/helpers.php"
+            "src/helpers.php"
         ]
     }
 }
