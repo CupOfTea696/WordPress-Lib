@@ -442,8 +442,11 @@ class Application extends Container
     {
         $this->instance('path', $this->path());
         
-        foreach (['base', 'config', 'public', 'storage', 'wp'] as $path) {
-            $this->instance('path.'.$path, $this->{$path.'Path'}());
+        foreach (['base', 'config', 'public', 'storage', 'wp'] as $name) {
+            $path = $this->{$name . 'Path'}();
+            
+            $this->instance('path.' . $name, $path);
+            define(strtoupper($name) . '_PATH', $path);
         }
     }
     
