@@ -19,6 +19,7 @@ use CupOfTea\WordPress\Foundation\Bootstrap\RegisterFacades;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterServices;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterProviders;
 use CupOfTea\WordPress\Foundation\Bootstrap\ReadConfiguration;
+use CupOfTea\WordPress\Foundation\Bootstrap\RegisterThemeAutoloader;
 
 use Symfony\Component\Debug\Exception\FatalErrorException;
 
@@ -60,9 +61,12 @@ class Application extends Container
     protected $serviceProviders = [];
     
     /**
-     * The Application bootstrappers
+     * The Application bootstrappers.
+     * 
+     * @var array
      */
     public $bootstrappers = [
+        RegisterThemeAutoloader::class,
         ReadConfiguration::class,
         RegisterProviders::class,
         RegisterServices::class,
@@ -74,6 +78,7 @@ class Application extends Container
      * Create a new WordPress Application instance.
      *
      * @param  string|null  $basePath
+     * @param  \Composer\Autoload\ClassLoader|null  $composer
      * @return void
      */
     public function __construct($basePath = null, $composer = null)
