@@ -309,7 +309,7 @@ class Application extends Container
         $this->singleton('theme', function($app) {
             $app->bootstrapWith($app->bootstrappers);
             
-            $theme = $app->make(Str::camel(wp_get_theme()->Name) . '\\Theme');
+            $theme = $app->make(Str::studly(wp_get_theme()->Name) . '\\Theme');
             
             $theme->registerServices();
             
