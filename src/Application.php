@@ -10,6 +10,7 @@ use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use Illuminate\Container\Container;
 use Illuminate\Support\ServiceProvider;
 
@@ -308,7 +309,7 @@ class Application extends Container
         $this->singleton('theme', function($app) {
             $app->bootstrapWith($app->bootstrappers);
             
-            $theme = $app->make(wp_get_theme()->Name . '\\Theme');
+            $theme = $app->make(Str::camel(wp_get_theme()->Name) . '\\Theme');
             
             $theme->registerServices();
             
