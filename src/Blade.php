@@ -60,6 +60,10 @@ class Blade extends Service
         }
     }
     
+    public function compileView($path, $data = []) {
+        return $this->factory->file($path, $data)->render();
+    }
+    
     public function renderView($path)
     {
         if (! $path || Str::startsWith($path, $this->cachePath)) {
