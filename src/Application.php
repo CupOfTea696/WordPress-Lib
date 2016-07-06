@@ -232,7 +232,7 @@ class Application extends Container
             $patterns = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
             
             foreach ($patterns as $pattern) {
-                if (Str::is($pattern, $env) {
+                if (Str::is($pattern, $env)) {
                     return true;
                 }
             }
