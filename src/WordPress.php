@@ -136,7 +136,6 @@ class WordPress extends Service
             for ($i = ($pages - ($end_size - 1)); $i <= $pages; $i++) {
                 $compiled['num'][] = '<a href="' . $this->getPaginationLink($base, $i) . '" class="' . $this->getPaginatedClass($classes, 'num') . '">' . $i . '</a>';
             }
-            
         } elseif ($page >= ($pages - ($mid_size + 1))) {
             for ($i = 1; $i <= $end_size; $i++) {
                 $compiled['num'][] = '<a href="' . $this->getPaginationLink($base, $i) . '" class="' . $this->getPaginatedClass($classes, 'num') . '">' . $i . '</a>';

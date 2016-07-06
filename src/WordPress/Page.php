@@ -2,8 +2,6 @@
 
 namespace CupOfTea\WordPress\WordPress;
 
-use CupOfTea\WordPress\Service;
-
 class Page extends Post
 {
     public function getPostsPage()

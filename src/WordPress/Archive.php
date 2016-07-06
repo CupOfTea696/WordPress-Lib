@@ -2,8 +2,6 @@
 
 namespace CupOfTea\WordPress\WordPress;
 
-use CupOfTea\WordPress\Service;
-
 use Illuminate\Support\Collection;
 
 class Archive extends Post
@@ -31,7 +29,7 @@ class Archive extends Post
         
         $dates = Collection::make($result);
         
-        $dates = $dates->map(function($archive) use ($month, $baseUrl) {
+        $dates = $dates->map(function ($archive) use ($month, $baseUrl) {
             $archive->url = implode('/', [$baseUrl, $archive->year, $archive->month]);
             $archive->name = $month[zeroise($archive->month, 2)];
             
@@ -40,10 +38,10 @@ class Archive extends Post
         
         $dates = $dates->groupBy('year');
         
-        $dates = $dates->map(function($months, $year) use ($baseUrl) {
+        $dates = $dates->map(function ($months, $year) use ($baseUrl) {
             return (object) [
                 'url' => implode('/', [$baseUrl, $year]),
-                'months' => $months
+                'months' => $months,
             ];
         });
         

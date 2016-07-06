@@ -1,4 +1,6 @@
-<?php namespace CupOfTea\WordPress\Foundation\Bootstrap;
+<?php
+
+namespace CupOfTea\WordPress\Foundation\Bootstrap;
 
 use Illuminate\Contracts\Container\Container;
 

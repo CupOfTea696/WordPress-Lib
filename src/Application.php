@@ -4,16 +4,12 @@ namespace CupOfTea\WordPress;
 
 use Exception;
 use ErrorException;
-
 use Monolog\Logger;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
-
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Container\Container;
-use Illuminate\Support\ServiceProvider;
-
 use CupOfTea\WordPress\Foundation\Bootstrap\Environment;
 use CupOfTea\WordPress\Foundation\Bootstrap\BootApplication;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterFacades;
@@ -21,7 +17,6 @@ use CupOfTea\WordPress\Foundation\Bootstrap\RegisterServices;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterProviders;
 use CupOfTea\WordPress\Foundation\Bootstrap\ReadConfiguration;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterThemeAutoloader;
-
 use Symfony\Component\Debug\Exception\FatalErrorException;
 
 class Application extends Container
@@ -63,7 +58,7 @@ class Application extends Container
     
     /**
      * The Application bootstrappers.
-     * 
+     *
      * @var array
      */
     public $bootstrappers = [
@@ -204,7 +199,7 @@ class Application extends Container
             if (is_array($concrete)) {
                 $self = Arr::pull($concrete, '_self');
                 $subservices = array_combine(
-                    array_map(function($key) use ($alias) {
+                    array_map(function ($key) use ($alias) {
                         return $alias . '.' . $key;
                     }, array_keys($concrete)),
                     $concrete
@@ -320,7 +315,7 @@ class Application extends Container
     
     protected function registerTheme()
     {
-        $this->singleton('theme', function($app) {
+        $this->singleton('theme', function ($app) {
             $app->bootstrapWith($app->bootstrappers);
             
             $theme = $app->make(Str::studly(wp_get_theme()->Name) . '\\Theme');

@@ -3,7 +3,6 @@
 namespace CupOfTea\WordPress\Foundation\Bootstrap;
 
 use Dotenv\Dotenv;
-
 use Illuminate\Contracts\Container\Container;
 
 class Environment
@@ -27,7 +26,7 @@ class Environment
             'DB_NAME',
             'DB_USER',
             'DB_PASS',
-            'DB_HOST'
+            'DB_HOST',
         ]);
     }
 }

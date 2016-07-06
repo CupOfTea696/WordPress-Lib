@@ -25,4 +25,3 @@ class Theme extends Service
         return str_replace($this->app->publicPath(), '', $this->getRoot());
     }
 }
-

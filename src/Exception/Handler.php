@@ -5,13 +5,7 @@ namespace CupOfTea\WordPress\Exception;
 use Throwable;
 use Exception;
 use ErrorException;
-
-use Whoops\Run;
-use Whoops\Handler\PrettyPageHandler;
-use Whoops\Handler\JsonResponseHandler;
-
 use CupOfTea\WordPress\Service;
-
 use Symfony\Component\Debug\ExceptionHandler;
 
 class Handler extends Service
@@ -97,5 +91,4 @@ class Handler extends Service
         
         return with(new ExceptionHandler(env('APP_DEBUG')))->handle($e);
     }
-    
 }
