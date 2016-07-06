@@ -226,7 +226,21 @@ class Application extends Container
      */
     public function environment()
     {
-        return env('APP_ENV', 'production');
+        $env = env('APP_ENV', 'production');
+        
+        if (func_num_args() > 0) {
+            $patterns = is_array(func_get_arg(0)) ? func_get_arg(0) : func_get_args();
+            
+            foreach ($patterns as $pattern) {
+                if (Str::is($pattern, $env) {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+        
+        return $env;
     }
     
     /**
