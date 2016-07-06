@@ -11,6 +11,7 @@ trait AccessesPost
         }
         
         global $post;
+
         return get_post($the_post ?: (is_home() ? get_option('page_for_posts') :
             (is_archive() ? (get_queried_object() ?: get_option('page_for_posts')) : $post)));
     }

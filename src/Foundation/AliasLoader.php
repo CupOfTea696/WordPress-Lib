@@ -1,4 +1,6 @@
-<?php namespace CupOfTea\WordPress\Foundation;
+<?php
+
+namespace CupOfTea\WordPress\Foundation;
 
 class AliasLoader
 {
@@ -84,7 +86,7 @@ class AliasLoader
      */
     public function register()
     {
-        if (!$this->registered) {
+        if (! $this->registered) {
             $this->prependToLoaderStack();
             
             $this->registered = true;

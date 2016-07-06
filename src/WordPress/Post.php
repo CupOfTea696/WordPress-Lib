@@ -26,7 +26,7 @@ class Post extends Service
     {
         $postsUrl = app('wp.page')->getPostsPageUrl();
         
-        if(isset($_SERVER['HTTP_REFERER']) && str_contains($_SERVER['HTTP_REFERER'], $postsUrl)) {
+        if (isset($_SERVER['HTTP_REFERER']) && str_contains($_SERVER['HTTP_REFERER'], $postsUrl)) {
             return app('wp')->getRelativeUrl($_SERVER['HTTP_REFERER']);
         }
         
@@ -49,7 +49,7 @@ class Post extends Service
         
         $args = [
             'post_parent' => $post->ID,
-            'post_type' => $post->post_type
+            'post_type' => $post->post_type,
         ];
         
         $children = get_children($args);
@@ -63,12 +63,12 @@ class Post extends Service
         
         $args = [
             'post_parent' => $post->ID,
-            'post_type' => $post->post_type
+            'post_type' => $post->post_type,
         ];
         
         $children = get_children($args);
         
-        uasort($children, function($a, $b) {
+        uasort($children, function ($a, $b) {
             // if PHP7 -> return $a <=> $b;
             
             if ($a->menu_order == $b->menu_order) {

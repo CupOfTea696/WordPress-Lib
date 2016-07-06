@@ -1,8 +1,9 @@
-<?php namespace CupOfTea\WordPress\Foundation\Bootstrap;
+<?php
+
+namespace CupOfTea\WordPress\Foundation\Bootstrap;
 
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Contracts\Container\Container;
-
 use CupOfTea\WordPress\Foundation\AliasLoader;
 
 class RegisterFacades

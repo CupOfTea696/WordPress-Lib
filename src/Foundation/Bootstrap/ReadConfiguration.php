@@ -1,9 +1,10 @@
-<?php namespace CupOfTea\WordPress\Foundation\Bootstrap;
+<?php
+
+namespace CupOfTea\WordPress\Foundation\Bootstrap;
 
 use Illuminate\Config\Repository;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Config\Repository as RepositoryContract;
-
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -56,7 +57,7 @@ class ReadConfiguration
         foreach (Finder::create()->files()->name('*.php')->in($app->configPath()) as $file) {
             $nesting = $this->getConfigurationNesting($file);
             
-            $files[$nesting.basename($file->getRealPath(), '.php')] = $file->getRealPath();
+            $files[$nesting . basename($file->getRealPath(), '.php')] = $file->getRealPath();
         }
         
         return $files;
@@ -73,7 +74,7 @@ class ReadConfiguration
         $directory = dirname($file->getRealPath());
         
         if ($tree = trim(str_replace(config_path(), '', $directory), DIRECTORY_SEPARATOR)) {
-            $tree = str_replace(DIRECTORY_SEPARATOR, '.', $tree).'.';
+            $tree = str_replace(DIRECTORY_SEPARATOR, '.', $tree) . '.';
         }
         
         return $tree;

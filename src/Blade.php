@@ -4,8 +4,6 @@ namespace CupOfTea\WordPress;
 
 use Illuminate\Support\Str;
 
-use InvalidArgumentException;
-
 class Blade extends Service
 {
     protected $factory;
@@ -60,7 +58,8 @@ class Blade extends Service
         }
     }
     
-    public function compileView($path, $data = []) {
+    public function compileView($path, $data = [])
+    {
         return $this->factory->file($path, $data)->render();
     }
     
@@ -116,14 +115,14 @@ class Blade extends Service
     {
         $this->startLoop();
         
-        return "<?php if (have_posts()): while (have_posts()): the_post(); \$post = get_post(); ?>";
+        return '<?php if (have_posts()): while (have_posts()): the_post(); $post = get_post(); ?>';
     }
     
     public function compileWpempty()
     {
         $this->closeLoop();
         
-        return "<?php endwhile; else: ?>";
+        return '<?php endwhile; else: ?>';
     }
     
     public function compileEndwploop()
@@ -174,7 +173,7 @@ class Blade extends Service
     {
         $this->acfIfCounter--;
         
-        return "<?php endif; ?>";
+        return '<?php endif; ?>';
     }
     
     public function compileAcfrepeater($expression)
