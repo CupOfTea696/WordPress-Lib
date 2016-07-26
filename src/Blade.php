@@ -2,6 +2,7 @@
 
 namespace CupOfTea\WordPress;
 
+use BadMethodCallException;
 use Illuminate\Support\Str;
 
 class Blade extends Service
@@ -103,6 +104,10 @@ class Blade extends Service
     
     protected function endLoop()
     {
+        if ($this->loop < 0) {
+            throw new BadMethodCallException('All loops already closed.');
+        }
+        
         $open = $this->loopStack[$this->loop]['open'];
         
         array_pop($this->loopStack);
@@ -166,6 +171,10 @@ class Blade extends Service
     
     public function compileAcfifvalue()
     {
+        if ($this->acfIfCounter < 0) {
+            throw new BadMethodCallException('An empty @acf control statement can only be used within an @ifacf statement.');
+        }
+        
         return "<?php echo e(\$__acf_value_{$this->acfIfCounter}); ?>";
     }
     
