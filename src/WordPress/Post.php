@@ -33,6 +33,19 @@ class Post extends Service
         return $postsUrl;
     }
     
+    public function getThumbnailUrl($size = 'thumbnail', $post = null)
+    {
+        return $this->getFeaturedImageUrl($size, $post);
+    }
+    
+    public function getFeaturedImageUrl($size = 'full', $post = null)
+    {
+        $post = $this->post($post);
+        $img_id = get_post_thumbnail_id($post->ID);
+        
+        return wp_get_attachment_image_src($img_id, $size)[0];
+    }
+    
     public function hasParent($post = null)
     {
         return (bool) $this->post($post)->post_parent;
