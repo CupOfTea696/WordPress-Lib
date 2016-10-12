@@ -44,8 +44,13 @@ class WordPress extends Service
     public function getRelativeUrl($from)
     {
         $url = is_object($from) ? $from->url : $from;
+        $url = rtrim(str_replace(get_home_url(), '', $url), '/');
         
-        return rtrim(str_replace(get_home_url(), '', $url), '/') . '/';
+        if (preg_match('/#/', $url)) {
+            return $url;
+        }
+        
+        return preg_replace('/([^\\/])#/', '$1/#', $url) . '/';
     }
     
     public function pages()
