@@ -155,6 +155,8 @@ class Blade extends Service
     
     public function compileEndwpquery()
     {
+        $this->closeStack('wpquery');
+        
         return "<?php endif; ?>";
     }
     
@@ -260,25 +262,26 @@ class Blade extends Service
             return "<?php echo e(app('wp')->acf({$expression})); ?>";
         }
         
-        if ($this->acfIfCounter < 0) {
-            return '';
+        $current = $this->lastOfType('acfrow');
+        
+        if ($current) {
+            return "<?php echo e(\$__acf_value_{$current['id']}); ?>";
         }
         
-        return "<?php echo e(\$__acf_value_{$this->acfIfCounter}); ?>";
+        return '';
     }
     
     public function compileIfacf($expression)
     {
         $expression = $this->normalizeExpression($expression);
+        $id = $this->openStack('ifacf');
         
-        $this->acfIfCounter++;
-        
-        return "<?php if (\$__acf_value_{$this->acfIfCounter} = get_field({$expression})): ?>";
+        return "<?php if (\$__acf_value_{$id} = get_field({$expression})): ?>";
     }
     
     public function compileEndifacf()
     {
-        $this->acfIfCounter--;
+        $this->closeStack('ifacf');
         
         return '<?php endif; ?>';
     }
