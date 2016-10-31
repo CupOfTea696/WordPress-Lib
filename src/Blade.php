@@ -3,6 +3,7 @@
 namespace CupOfTea\WordPress;
 
 use BadMethodCallException;
+use InvalidArgumentException;
 use Illuminate\Support\Str;
 
 class Blade extends Service
@@ -15,24 +16,30 @@ class Blade extends Service
     
     protected $cachePath;
     
-    protected $loop = -1;
+    private $stack = [];
     
-    protected $loopStack = [];
+    private $typedStacks = [];
     
-    protected $acfIfCounter = -1;
+    private $acfIfCounter = -1;
+    
+    private $bladeStripsParentheses;
     
     protected $directives = [
+        'wpposts',
+        'wpendposts',
+        'wpquery',
+        'endwpquery',
         'wploop',
         'wpempty',
         'endwploop',
-        'wpquery',
-        'endwpquery',
         'acf',
         'ifacf',
         'endifacf',
         'acfrepeater',
-        'acfempty',
         'endacfrepeater',
+        'acfloop',
+        'acfempty',
+        'endacfloop',
     ];
     
     public function boot()
@@ -91,91 +98,194 @@ class Blade extends Service
         }
     }
     
-    protected function startLoop()
+    protected function openStack($type, $params)
     {
-        $this->loopStack[] = ['open' => true];
-        $this->loop++;
+        $prev = last($this->stack);
+        
+        $item = [
+            'type' => $type,
+            'id' => $prev['id'] + 1,
+        ];
+        
+        $item = array_merge($params, $item);
+        
+        $this->stack[] = &$item;
+        $this->typedStacks[$type][] = &$item;
+        
+        return $item['id'];
     }
     
-    protected function closeLoop()
+    protected function closeStack($type)
     {
-        $this->loopStack[$this->loop]['open'] = false;
-    }
-    
-    protected function endLoop()
-    {
-        if ($this->loop < 0) {
-            throw new BadMethodCallException('All loops already closed.');
+        $current = $this->last($this->stack);
+        
+        if ($current['type'] != $type) {
+            throw new BadMethodCallException('Invalid end directive. Trying to close ' . $type . ' but was expecting ' . $current['type'] . '.');
         }
         
-        $open = $this->loopStack[$this->loop]['open'];
+        array_pop($this->stack);
+        array_pop($this->typedStacks[$type]);
         
-        array_pop($this->loopStack);
-        $this->loop--;
-        
-        return $open;
+        return $current;
     }
     
-    public function compileWploop()
+    public function compileWpposts()
     {
-        $this->startLoop();
+        $this->openStack('wpposts');
         
-        return '<?php if (have_posts()): while (have_posts()): the_post(); $post = get_post(); ?>';
+        return '<?php if (have_posts()): ?>';
     }
     
-    public function compileWpempty()
+    public function compileEndwpposts()
     {
-        $this->closeLoop();
+        $this->closeStack('wpposts');
         
-        return '<?php endwhile; else: ?>';
-    }
-    
-    public function compileEndwploop()
-    {
-        $open = $this->endLoop();
-        $endwhile = $open ? 'endwhile; ' : '';
-        
-        return "<?php {$endwhile}endif; ?>";
+        return '<?php endif; ?>';
     }
     
     public function compileWpquery($expression)
     {
-        $this->startLoop();
+        $expression = $this->normalizeExpression($expression);
         
-        return "<?php \$__blade_wp_query = new WP_Query{$expression}; if (\$__blade_wp_query->have_posts()): while (\$__blade_wp_query->have_posts()): \$__blade_wp_query->the_post(); \$post = \$__blade_wp_query->get_post(); ?>";
+        if (! $expression) {
+            throw new InvalidArgumentException('A @wpquery directive can\'t be empty.');
+        }
+        
+        $id = $this->openStack('wpquery');
+        
+        return "<?php \$__blade_wp_query_{$id} = new WP_Query({$expression}); if (\$__blade_wp_query_{$id}->have_posts()): ?>";
     }
     
     public function compileEndwpquery()
     {
-        $open = $this->endLoop();
-        $endwhile = $open ? 'endwhile; ' : '';
+        return "<?php endif; ?>";
+    }
+    
+    public function compileWploop()
+    {
+        if ($parent = $this->lastOfType('wpposts') || $parent = $this->lastOfType('wpquery')) {
+            $related = [];
+            
+            if (! empty($this->typedStacks['wploop'])) {
+                $related = array_where($this->typedStacks['wploop'], function ($item) use ($parent) {
+                    if (empty($item['rel'])) {
+                        return false;
+                    }
+                    
+                    return $item['rel'] == $parent['id'];
+                });
+            }
+            
+            if (count($related) == 0) {
+                $id = $this->openStack('wploop', ['rel' => $parent['id'], 'open' => true]);
+                
+                if ($parent['type'] == 'wpposts') {
+                    return "<?php while (have_posts()): the_post(); \$__blade_wp_post_{$id} = \$post = get_post(); ?>";
+                }
+                
+                if ($parent['type'] == 'wpquery') {
+                    return "<?php while (\$__blade_wp_query_{$parent['id']}->have_posts()): \$__blade_wp_query_{$parent['id']}->the_post(); \$__blade_wp_post_{$id} = \$post = \$__blade_wp_query_{$parent['id']}->get_post(); ?>";
+                }
+            }
+        }
         
-        return "<?php {$endwhile}endif; wp_reset_postdata(); ?>";
+        $id = $this->openStack('wploop', ['open' => true]);
+        
+        return "<?php if (have_posts()): while (have_posts()): the_post(); \$__blade_wp_post_{$id} = \$post = get_post(); ?>";
+    }
+    
+    public function compileWpempty()
+    {
+        $current = $this->last($this->stack);
+        
+        if ($current['type'] == 'wploop') {
+            $current['open'] = false;
+            $parent = ! empty($current['rel']) ? $this->get($current['rel']) : false;
+            
+            if ($parent && $parent['type'] == 'wpquery') {
+                $reset = 'wp_reset_postdata();';
+                $prevQuery = false;
+                
+                foreach (array_reverse($this->stack) as $item) {
+                    if ($item == $current) {
+                        continue;
+                    }
+                    
+                    if ($item['type'] == 'wpquery') {
+                        $prevQuery = $item;
+                        
+                        break;
+                    }
+                }
+                
+                if ($prevQuery) {
+                    $reset = "\$__blade_wp_query_{$prevQuery['id']}->reset_postdata();";
+                }
+                
+                return "<?php endwhile; $reset \$post = \$__blade_wp_post_{$parent['id']}; else: ?>";
+            }
+            
+            return '<?php endwhile; else: ?>';
+        }
+        
+        return '<?php else: ?>';
+    }
+    
+    public function compileEndwploop()
+    {
+        $current = $this->last($this->stack);
+        $parent = ! empty($current['rel']) ? $this->get($current['rel']) : false;
+        
+        $this->closeStack('wploop');
+        
+        if ($current['open']) {
+            if ($parent && $parent['type'] == 'wpquery') {
+                $reset = 'wp_reset_postdata();';
+                $prevQuery = false;
+                
+                foreach (array_reverse($this->stack) as $item) {
+                    if ($item['type'] == 'wpquery') {
+                        $prevQuery = $item;
+                        
+                        break;
+                    }
+                }
+                
+                if ($prevQuery) {
+                    $reset = "\$__blade_wp_query_{$prevQuery['id']}->reset_postdata();";
+                }
+                
+                return "<?php endwhile; {$reset} \$post = \$__blade_wp_post_{$parent['id']}; ?>";
+            }
+            
+            return "<?php endwhile; ?>";
+        }
+        
+        return '';
     }
     
     public function compileAcf($expression)
     {
-        if ($expression && $expression != '()') {
-            return "<?php echo e(app('wp')->acf{$expression}); ?>";
+        $expression = $this->normalizeExpression($expression);
+        
+        if ($expression) {
+            return "<?php echo e(app('wp')->acf({$expression})); ?>";
         }
         
-        return $this->compileAcfifvalue();
+        if ($this->acfIfCounter < 0) {
+            throw new BadMethodCallException('An empty @acf directive can only be used within an @ifacf directive.');
+        }
+        
+        return "<?php echo e(\$__acf_value_{$this->acfIfCounter}); ?>";
     }
     
     public function compileIfacf($expression)
     {
+        $expression = $this->normalizeExpression($expression);
+        
         $this->acfIfCounter++;
         
-        return "<?php if (\$__acf_value_{$this->acfIfCounter} = get_field{$expression}): ?>";
-    }
-    
-    public function compileAcfifvalue()
-    {
-        if ($this->acfIfCounter < 0) {
-            throw new BadMethodCallException('An empty @acf control statement can only be used within an @ifacf statement.');
-        }
-        
-        return "<?php echo e(\$__acf_value_{$this->acfIfCounter}); ?>";
+        return "<?php if (\$__acf_value_{$this->acfIfCounter} = get_field({$expression})): ?>";
     }
     
     public function compileEndifacf()
@@ -187,18 +297,121 @@ class Blade extends Service
     
     public function compileAcfrepeater($expression)
     {
-        $this->startLoop();
+        $expression = $this->normalizeExpression($expression);
         
-        return "<?php if (have_rows{$expression}): while(have_rows{$expression}): the_row(); ?>";
-    }
-    
-    public function compileAcfempty()
-    {
-        return $this->compileWpempty();
+        $this->openStack('acfrepeater', ['expression' => $expression]);
+        
+        return "<?php if (have_rows({$expression})): ?>";
     }
     
     public function compileEndacfrepeater()
     {
-        return $this->compileEndwploop();
+        $this->closeStack('acfrepeater');
+        
+        return '<?php endif; ?>';
+    }
+    
+    public function compileAcfloop($expression)
+    {
+        $expression = $this->normalizeExpression($expression);
+        
+        if ($parent = $this->lastOfType('acfrepeater')) {
+            $related = [];
+            
+            if (! empty($this->typedStacks['acfloop'])) {
+                $related = array_where($this->typedStacks['acfloop'], function ($item) use ($parent) {
+                    if (empty($item['rel'])) {
+                        return false;
+                    }
+                    
+                    return $item['rel'] == $parent['id'];
+                });
+            }
+            
+            if (count($related) == 0) {
+                $id = $this->openStack('acfloop', ['rel' => $parent['id'], 'open' => true]);
+                
+                if (! $expression) {
+                    $expression = $parent['expression'];
+                }
+                
+                return "<?php while(have_rows({$expression})): the_row(); ?>";
+            }
+        }
+        
+        $id = $this->openStack('acfloop', ['open' => true]);
+        
+        return "<?php if (have_rows({$expression})): while(have_rows({$expression})): the_row(); ?>";
+    }
+    
+    public function compileAcfempty()
+    {
+        $current = $this->last($this->stack);
+        
+        if ($current['type'] == 'acfloop') {
+            $current['open'] = false;
+            
+            return '<?php endwhile; else: ?>';
+        }
+        
+        return '<?php else: ?>';
+    }
+    
+    public function compileEndacfloop()
+    {
+        $current = $this->last($this->stack);
+        $parent = ! empty($current['rel']) ? $this->get($current['rel']) : false;
+        
+        $this->closeStack('acfloop');
+        
+        if ($current['open']) {
+            return "<?php endwhile; ?>";
+        }
+        
+        return '';
+    }
+    
+    private function get($id)
+    {
+        foreach ($this->stack as $item) {
+            if ($item['id'] == $id) {
+                return $item;
+            }
+        }
+        
+        return false;
+    }
+    
+    private function &last($array)
+    {
+        return $array[count($array) - 1];
+    }
+    
+    private function lastOfType($type)
+    {
+        if (empty($this->typedStacks[$type])) {
+            return false;
+        }
+        
+        return $this->last($this->typedStacks[$type]);
+    }
+    
+    private function normalizeExpression($expression)
+    {
+        if ($this->bladeStripsParentheses === null) {
+            $this->blade->directive('__blade_wp_test_strips_parentheses', function($expression) {
+                return $expression;
+            });
+            
+            $this->bladeStriptsParentheses = $this->blade->compileString('@__blade_wp_test_strips_parentheses()') !== '()';
+        }
+        
+        if (! $this->bladeStriptsParentheses) {
+            if (Str::startsWith($expression, '(') && Str::endsWith($expression, ')')) {
+                return Str::substr($expression, 1, -1);
+            }
+        }
+        
+        return $expression;
     }
 }
