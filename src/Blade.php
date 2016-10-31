@@ -3,7 +3,6 @@
 namespace CupOfTea\WordPress;
 
 use BadMethodCallException;
-use InvalidArgumentException;
 use Illuminate\Support\Str;
 
 class Blade extends Service
@@ -146,11 +145,6 @@ class Blade extends Service
     public function compileWpquery($expression)
     {
         $expression = $this->normalizeExpression($expression);
-        
-        if (! $expression) {
-            throw new InvalidArgumentException('A @wpquery directive can\'t be empty.');
-        }
-        
         $id = $this->openStack('wpquery');
         
         return "<?php \$__blade_wp_query_{$id} = new WP_Query({$expression}); if (\$__blade_wp_query_{$id}->have_posts()): ?>";
@@ -163,7 +157,7 @@ class Blade extends Service
     
     public function compileWploop()
     {
-        if ($parent = $this->lastOfType('wpposts') || $parent = $this->lastOfType('wpquery')) {
+        if ($parent = $this->lastOfType('wpposts') ?: $parent = $this->lastOfType('wpquery')) {
             $related = [];
             
             if (! empty($this->typedStacks['wploop'])) {
@@ -222,7 +216,7 @@ class Blade extends Service
                     $reset = "\$__blade_wp_query_{$prevQuery['id']}->reset_postdata();";
                 }
                 
-                return "<?php endwhile; $reset \$post = \$__blade_wp_post_{$parent['id']}; else: ?>";
+                return "<?php endwhile; $reset \$post = \$__blade_wp_post_{$current['id']}; else: ?>";
             }
             
             return '<?php endwhile; else: ?>';
@@ -235,6 +229,7 @@ class Blade extends Service
     {
         $current = $this->last($this->stack);
         $parent = ! empty($current['rel']) ? $this->get($current['rel']) : false;
+        $endif = $parent ? '' : ' endif;';
         
         $this->closeStack('wploop');
         
@@ -255,13 +250,13 @@ class Blade extends Service
                     $reset = "\$__blade_wp_query_{$prevQuery['id']}->reset_postdata();";
                 }
                 
-                return "<?php endwhile; {$reset} \$post = \$__blade_wp_post_{$parent['id']}; ?>";
+                return "<?php endwhile; {$reset} \$post = \$__blade_wp_post_{$current['id']}; ?>";
             }
             
-            return "<?php endwhile; ?>";
+            return "<?php endwhile;{$endif} ?>";
         }
         
-        return '';
+        return "<?php{$endif} ?>";
     }
     
     public function compileAcf($expression)
@@ -273,7 +268,7 @@ class Blade extends Service
         }
         
         if ($this->acfIfCounter < 0) {
-            throw new BadMethodCallException('An empty @acf directive can only be used within an @ifacf directive.');
+            return '';
         }
         
         return "<?php echo e(\$__acf_value_{$this->acfIfCounter}); ?>";
@@ -364,11 +359,10 @@ class Blade extends Service
         
         $this->closeStack('acfloop');
         
-        if ($current['open']) {
-            return "<?php endwhile; ?>";
-        }
+        $endwhile = $current['open'] ? ' endwhile;' : '';
+        $endif = $parent ? '' : ' endif;';
         
-        return '';
+        return "<?php{$endwhile}{$endif} ?>";
     }
     
     private function get($id)
