@@ -197,26 +197,21 @@ class Blade extends Service
             $parent = ! empty($current['rel']) ? $this->get($current['rel']) : false;
             
             if ($parent && $parent['type'] == 'wpquery') {
-                $reset = 'wp_reset_postdata();';
-                $prevQuery = false;
+                $post = '';
                 
                 foreach (array_reverse($this->stack) as $item) {
                     if ($item == $current) {
                         continue;
                     }
                     
-                    if ($item['type'] == 'wpquery') {
-                        $prevQuery = $item;
+                    if ($item['type'] == 'wploop') {
+                        $post = " \$post = \$__blade_wp_post_{$item['id']};";
                         
                         break;
                     }
                 }
                 
-                if ($prevQuery) {
-                    $reset = "\$__blade_wp_query_{$prevQuery['id']}->reset_postdata();";
-                }
-                
-                return "<?php endwhile; $reset \$post = \$__blade_wp_post_{$current['id']}; else: ?>";
+                return "<?php endwhile; wp_reset_postdata();{$post} else: ?>";
             }
             
             return '<?php endwhile; else: ?>';
@@ -235,22 +230,17 @@ class Blade extends Service
         
         if ($current['open']) {
             if ($parent && $parent['type'] == 'wpquery') {
-                $reset = 'wp_reset_postdata();';
-                $prevQuery = false;
+                $post = '';
                 
                 foreach (array_reverse($this->stack) as $item) {
-                    if ($item['type'] == 'wpquery') {
-                        $prevQuery = $item;
+                    if ($item['type'] == 'wploop') {
+                        $post = " \$post = \$__blade_wp_post_{$item['id']};";
                         
                         break;
                     }
                 }
                 
-                if ($prevQuery) {
-                    $reset = "\$__blade_wp_query_{$prevQuery['id']}->reset_postdata();";
-                }
-                
-                return "<?php endwhile; {$reset} \$post = \$__blade_wp_post_{$current['id']}; ?>";
+                return "<?php endwhile; wp_reset_postdata();{$post}{$endif} ?>";
             }
             
             return "<?php endwhile;{$endif} ?>";
