@@ -98,7 +98,7 @@ class Blade extends Service
         }
     }
     
-    protected function openStack($type, $params)
+    protected function openStack($type, $params = [])
     {
         $prev = last($this->stack);
         
