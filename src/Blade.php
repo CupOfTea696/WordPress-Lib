@@ -34,11 +34,14 @@ class Blade extends Service
         'acf',
         'ifacf',
         'endifacf',
-        'acfrepeater',
-        'endacfrepeater',
+        'acfrows',
+        'endacfrows',
         'acfloop',
         'acfempty',
         'endacfloop',
+        'acflayout',
+        'elseacflayout',
+        'endacflayout',
     ];
     
     public function boot()
@@ -280,18 +283,18 @@ class Blade extends Service
         return '<?php endif; ?>';
     }
     
-    public function compileAcfrepeater($expression)
+    public function compileAcfrow($expression)
     {
         $expression = $this->normalizeExpression($expression);
         
-        $this->openStack('acfrepeater', ['expression' => $expression]);
+        $this->openStack('acfrow', ['expression' => $expression]);
         
         return "<?php if (have_rows({$expression})): ?>";
     }
     
-    public function compileEndacfrepeater()
+    public function compileEndacfrow()
     {
-        $this->closeStack('acfrepeater');
+        $this->closeStack('acfrow');
         
         return '<?php endif; ?>';
     }
@@ -300,7 +303,7 @@ class Blade extends Service
     {
         $expression = $this->normalizeExpression($expression);
         
-        if ($parent = $this->lastOfType('acfrepeater')) {
+        if ($parent = $this->lastOfType('acfrow')) {
             $related = [];
             
             if (! empty($this->typedStacks['acfloop'])) {
@@ -353,6 +356,30 @@ class Blade extends Service
         $endif = $parent ? '' : ' endif;';
         
         return "<?php{$endwhile}{$endif} ?>";
+    }
+    
+    public function compileAcflayout($expression)
+    {
+        $expression = $this->normalizeExpression($expression);
+        $id = $this->openStack('acflayout');
+        
+        return "<?php if ((\$__acf_layout_{$id} = get_row_layout()) == {$expression}): ?>";
+    }
+    
+    public function compileElseacflayout($expression)
+    {
+        $expression = $this->normalizeExpression($expression);
+        $current = $this->lastOfType('acfrow');
+        
+        return "<?php elseif (\$__acf_layout_{$current['id']} == {$expression}): ?>";
+    }
+    
+    public function compileEndacflayout($expression)
+    {
+        $expression = $this->normalizeExpression($expression);
+        $this->closeStack('acflayout');
+        
+        return "<?php endif; ?>";
     }
     
     private function get($id)
