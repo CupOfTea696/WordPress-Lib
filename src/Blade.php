@@ -150,14 +150,24 @@ class Blade extends Service
         $expression = $this->normalizeExpression($expression);
         $id = $this->openStack('wpquery');
         
-        return "<?php \$__blade_wp_query_{$id} = new WP_Query({$expression}); if (\$__blade_wp_query_{$id}->have_posts()): ?>";
+        return "<?php \$query = \$__blade_wp_query_{$id} = new WP_Query({$expression}); if (\$__blade_wp_query_{$id}->have_posts()): ?>";
     }
     
     public function compileEndwpquery()
     {
         $this->closeStack('wpquery');
         
-        return "<?php endif; ?>";
+        $query = '';
+        
+        foreach (array_reverse($this->stack) as $item) {
+            if ($item['type'] == 'wpquery') {
+                $query = " \$query = \$__blade_wp_query_{$item['id']};";
+                
+                break;
+            }
+        }
+        
+        return "<?php endif;{$query} ?>";
     }
     
     public function compileWploop()
