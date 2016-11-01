@@ -25,7 +25,7 @@ class Blade extends Service
     
     protected $directives = [
         'wpposts',
-        'wpendposts',
+        'endwpposts',
         'wpquery',
         'endwpquery',
         'wploop',
