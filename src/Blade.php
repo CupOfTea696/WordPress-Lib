@@ -19,8 +19,6 @@ class Blade extends Service
     
     private $typedStacks = [];
     
-    private $acfIfCounter = -1;
-    
     private $bladeStripsParentheses;
     
     protected $directives = [
@@ -107,7 +105,7 @@ class Blade extends Service
             return $expression;
         });
         
-        $this->bladeStriptsParentheses = $this->blade->compileString('@__blade_wp_test_strips_parentheses()') !== '()';
+        $this->bladeStripsParentheses = $this->blade->compileString('@__blade_wp_test_strips_parentheses()') !== '()';
     }
     
     protected function openStack($type, $params = [])
@@ -432,7 +430,7 @@ class Blade extends Service
     
     private function normalizeExpression($expression)
     {
-        if (! $this->bladeStriptsParentheses) {
+        if (! $this->bladeStripsParentheses) {
             if (Str::startsWith($expression, '(') && Str::endsWith($expression, ')')) {
                 return Str::substr($expression, 1, -1);
             }
