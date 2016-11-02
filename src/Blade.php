@@ -55,6 +55,7 @@ class Blade extends Service
         $this->factory->addExtension('php', 'blade');
         
         $this->bladeDirectives();
+        $this->checkBladeStripsParentheses();
         
         $filters = [
             'template_include',
@@ -98,6 +99,15 @@ class Blade extends Service
                 $this->blade->directive($directive, [$this, $method]);
             }
         }
+    }
+    
+    protected function checkBladeStripsParentheses()
+    {
+        $this->blade->directive('__blade_wp_test_strips_parentheses', function($expression) {
+            return $expression;
+        });
+        
+        $this->bladeStriptsParentheses = $this->blade->compileString('@__blade_wp_test_strips_parentheses()') !== '()';
     }
     
     protected function openStack($type, $params = [])
@@ -422,14 +432,6 @@ class Blade extends Service
     
     private function normalizeExpression($expression)
     {
-        if ($this->bladeStripsParentheses === null) {
-            $this->blade->directive('__blade_wp_test_strips_parentheses', function($expression) {
-                return $expression;
-            });
-            
-            $this->bladeStriptsParentheses = $this->blade->compileString('@__blade_wp_test_strips_parentheses()') !== '()';
-        }
-        
         if (! $this->bladeStriptsParentheses) {
             if (Str::startsWith($expression, '(') && Str::endsWith($expression, ')')) {
                 return Str::substr($expression, 1, -1);
