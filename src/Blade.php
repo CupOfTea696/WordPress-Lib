@@ -352,7 +352,7 @@ class Blade extends Service
         if ($current['type'] == 'acfloop') {
             $current['open'] = false;
             
-            return '<?php endwhile; else: ?>';
+            return '<?php endwhile; wp_reset_postdata(); else: ?>';
         }
         
         return '<?php else: ?>';
@@ -365,7 +365,7 @@ class Blade extends Service
         
         $this->closeStack('acfloop');
         
-        $endwhile = $current['open'] ? ' endwhile;' : '';
+        $endwhile = $current['open'] ? ' endwhile; wp_reset_postdata();' : '';
         $endif = $parent ? '' : ' endif;';
         
         return "<?php{$endwhile}{$endif} ?>";
