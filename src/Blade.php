@@ -101,7 +101,7 @@ class Blade extends Service
     
     protected function checkBladeStripsParentheses()
     {
-        $this->blade->directive('__blade_wp_test_strips_parentheses', function($expression) {
+        $this->blade->directive('__blade_wp_test_strips_parentheses', function ($expression) {
             return $expression;
         });
         
@@ -400,7 +400,7 @@ class Blade extends Service
         $expression = $this->normalizeExpression($expression);
         $this->closeStack('acflayout');
         
-        return "<?php endif; ?>";
+        return '<?php endif; ?>';
     }
     
     private function get($id)
