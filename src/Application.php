@@ -10,7 +10,9 @@ use Monolog\Handler\RotatingFileHandler;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Illuminate\Container\Container;
+use CupOfTea\Package\Package;
 use CupOfTea\WordPress\Foundation\Bootstrap\Environment;
+use CupOfTea\Package\Contracts\Package as PackageContract;
 use CupOfTea\WordPress\Foundation\Bootstrap\BootApplication;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterFacades;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterServices;
@@ -19,8 +21,31 @@ use CupOfTea\WordPress\Foundation\Bootstrap\ReadConfiguration;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterThemeAutoloader;
 use Symfony\Component\Debug\Exception\FatalErrorException;
 
-class Application extends Container
+class Application extends Container implements PackageContract
 {
+    use Package;
+    
+    /**
+     * Package Name.
+     *
+     * @const string
+     */
+    const VENDOR = 'CupOfTea';
+    
+    /**
+     * Package Name.
+     *
+     * @const string
+     */
+    const PACKAGE = 'Wordpress-Lib';
+    
+    /**
+     * Package Version.
+     *
+     * @const string
+     */
+    const VERSION = '0.0.x-dev';
+    
     /**
      * The base path for the WordPress installation.
      *
