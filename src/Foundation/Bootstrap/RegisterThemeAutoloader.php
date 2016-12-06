@@ -36,6 +36,14 @@ class RegisterThemeAutoloader
             }
         }
         
+        $libcfg = $themeDir . '/.libcfg';
+        
+        if (file_exists($libcfg) && is_file($libcfg)) {
+            $libcfg = array_filter(array_map('trim', explode(PHP_EOL, $cfg)));
+            
+            $path = array_merge($path, $libcfg);
+        }
+        
         $composer->addPsr4($namespace, $path);
     }
 }
