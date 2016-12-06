@@ -51,7 +51,7 @@ if (! function_exists('app')) {
      *
      * @param  string  $make
      * @param  array   $parameters
-     * @return mixed|\SportSplash\Application
+     * @return mixed|\CupOfTea\WordPress\Application
      */
     function app($make = null, $parameters = [])
     {
@@ -167,5 +167,23 @@ if (! function_exists('storage_path')) {
     function storage_path($path = '')
     {
         return app('path.storage') . ($path ? DIRECTORY_SEPARATOR . $path : $path);
+    }
+}
+
+if (! function_exists('theme')) {
+    /**
+     * Get the current theme instance.
+     * 
+     * @return \CupOfTea\WordPress\Theme\Theme
+     */
+    function theme()
+    {
+        static $theme = null;
+        
+        if (is_null($theme)) {
+            $theme = app('theme');
+        }
+        
+        return $theme;
     }
 }
