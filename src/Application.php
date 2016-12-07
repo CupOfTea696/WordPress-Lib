@@ -26,7 +26,7 @@ class Application extends Container implements PackageContract
     use Package;
     
     /**
-     * Package Name.
+     * Package Vendor.
      *
      * @const string
      */
