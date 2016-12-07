@@ -37,7 +37,7 @@ class Application extends Container implements PackageContract
      *
      * @const string
      */
-    const PACKAGE = 'Wordpress-Lib';
+    const PACKAGE = 'WordPress-Lib';
     
     /**
      * Package Version.
