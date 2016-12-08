@@ -3,10 +3,10 @@
 namespace CupOfTea\WordPress\Foundation\Bootstrap;
 
 use Illuminate\Config\Repository;
-use Illuminate\Contracts\Container\Container;
-use Illuminate\Contracts\Config\Repository as RepositoryContract;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Config\Repository as RepositoryContract;
 
 class ReadConfiguration
 {
