@@ -173,7 +173,7 @@ if (! function_exists('storage_path')) {
 if (! function_exists('theme')) {
     /**
      * Get the current theme instance.
-     * 
+     *
      * @return \CupOfTea\WordPress\Theme\Theme
      */
     function theme()

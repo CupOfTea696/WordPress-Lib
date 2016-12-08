@@ -2,8 +2,8 @@
 
 namespace CupOfTea\WordPress\Exception;
 
-use Throwable;
 use Exception;
+use Throwable;
 use ErrorException;
 use CupOfTea\WordPress\Service;
 use Symfony\Component\Debug\ExceptionHandler;

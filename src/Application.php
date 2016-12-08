@@ -5,21 +5,21 @@ namespace CupOfTea\WordPress;
 use Exception;
 use ErrorException;
 use Monolog\Logger;
-use Monolog\Formatter\LineFormatter;
-use Monolog\Handler\RotatingFileHandler;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Container\Container;
 use CupOfTea\Package\Package;
+use Illuminate\Container\Container;
+use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\RotatingFileHandler;
 use CupOfTea\WordPress\Foundation\Bootstrap\Environment;
 use CupOfTea\Package\Contracts\Package as PackageContract;
+use Symfony\Component\Debug\Exception\FatalErrorException;
 use CupOfTea\WordPress\Foundation\Bootstrap\BootApplication;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterFacades;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterServices;
-use CupOfTea\WordPress\Foundation\Bootstrap\RegisterProviders;
 use CupOfTea\WordPress\Foundation\Bootstrap\ReadConfiguration;
+use CupOfTea\WordPress\Foundation\Bootstrap\RegisterProviders;
 use CupOfTea\WordPress\Foundation\Bootstrap\RegisterThemeAutoloader;
-use Symfony\Component\Debug\Exception\FatalErrorException;
 
 class Application extends Container implements PackageContract
 {
