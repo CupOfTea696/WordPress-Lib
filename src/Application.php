@@ -44,7 +44,7 @@ class Application extends Container implements PackageContract
      *
      * @const string
      */
-    const VERSION = '0.0.x-dev';
+    const VERSION = '1.0.0';
     
     /**
      * The base path for the WordPress installation.
