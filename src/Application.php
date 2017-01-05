@@ -547,6 +547,6 @@ class Application extends Container implements PackageContract
      */
     public function wpPath()
     {
-        return $this->basePath . DIRECTORY_SEPARATOR . 'public/wp';
+        return $this->basePath . DIRECTORY_SEPARATOR . env('APP_PUBLIC') . DIRECTORY_SEPARATOR . 'wp';
     }
 }
