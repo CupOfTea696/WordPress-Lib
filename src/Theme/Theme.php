@@ -4,6 +4,8 @@ namespace CupOfTea\WordPress\Theme;
 
 abstract class Theme extends Service
 {
+    private $services = [];
+    
     abstract public function registerServices();
     
     protected function register($alias, $service)
@@ -13,10 +15,15 @@ abstract class Theme extends Service
         $this->app->singleton($service);
         $this->app->alias($service, $alias);
         
-        $concrete = $this->app->make($service);
+        $this->services[$service] = $concrete = $this->app->make($service);
         
         if (method_exists($concrete, 'boot')) {
             $this->app->call([$concrete, 'boot']);
         }
+    }
+    
+    public function invoke($service)
+    {
+        return $this->services[$service];
     }
 }

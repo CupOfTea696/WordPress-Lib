@@ -176,12 +176,16 @@ if (! function_exists('theme')) {
      *
      * @return \CupOfTea\WordPress\Theme\Theme
      */
-    function theme()
+    function theme($service = null)
     {
         static $theme = null;
         
         if (is_null($theme)) {
             $theme = app('theme');
+        }
+        
+        if (! is_null($service)) {
+            return $theme($service);
         }
         
         return $theme;
