@@ -22,7 +22,7 @@ abstract class Theme extends Service
         }
     }
     
-    public function invoke($service)
+    public function __invoke($service)
     {
         return $this->services[$service];
     }
