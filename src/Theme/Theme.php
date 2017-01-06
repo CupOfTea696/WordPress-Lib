@@ -10,12 +10,10 @@ abstract class Theme extends Service
     
     protected function register($alias, $service)
     {
-        $alias = 'theme.' . $alias;
-        
         $this->app->singleton($service);
-        $this->app->alias($service, $alias);
+        $this->app->alias($service, 'theme.' . $alias);
         
-        $this->services[$service] = $concrete = $this->app->make($service);
+        $this->services[$alias] = $this->services[$service] = $concrete = $this->app->make($service);
         
         if (method_exists($concrete, 'boot')) {
             $this->app->call([$concrete, 'boot']);
