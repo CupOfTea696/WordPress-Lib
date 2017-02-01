@@ -63,16 +63,21 @@ class Blade extends Service
         ];
         
         foreach ($filters as $filter) {
-            add_filter($filter, [$this, 'renderView']);
+            add_filter($filter, [$this, 'compilePath']);
         }
     }
     
-    public function compileView($path, $data = [])
+    public function renderView($view, $data = [])
+    {
+        return $this->factory->make($view, $data)->render();
+    }
+    
+    public function renderPath($path, $data = [])
     {
         return $this->factory->file($path, $data)->render();
     }
     
-    public function renderView($path)
+    public function compilePath($path)
     {
         if (! $path || Str::startsWith($path, $this->cachePath)) {
             return $path;
