@@ -5,7 +5,7 @@ use Illuminate\Container\Container;
 
 if (! function_exists('env')) {
     /**
-     * Gets the value of an environment variable. Supports boolean, empty and null.
+     * Gets the value of an environment variable. Supports boolean, empty, null and base64 prefix.
      *
      * @param  string  $key
      * @param  mixed   $default
@@ -35,6 +35,10 @@ if (! function_exists('env')) {
             case 'null':
             case '(null)':
                 return;
+        }
+        
+        if (Str::startsWith($value, 'base64:')) {
+            return base64_decode(substr($value, 7));
         }
         
         if (Str::startsWith($value, '"') && Str::endsWith($value, '"')) {
