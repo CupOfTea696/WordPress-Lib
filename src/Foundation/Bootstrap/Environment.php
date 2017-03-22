@@ -7,6 +7,13 @@ use Illuminate\Contracts\Container\Container;
 
 class Environment
 {
+    protected $detectFromServerVars = [
+        'HTTP_HOST',
+        'SERVER_NAME',
+    ];
+    
+    protected $app;
+    
     /**
      * Bootstrap the given application.
      *
@@ -15,11 +22,13 @@ class Environment
      */
     public function bootstrap(Container $app)
     {
-        $app->singleton('env', function ($app) {
-            return new Dotenv($app->basePath());
+        $this->app = $app;
+        
+        $this->app->singleton('env', function ($app) {
+            return new Dotenv(base_path(), $this->getEnvFileName());
         });
         
-        $env = $app->make('env');
+        $env = $this->app->make('env');
         
         $env->overload();
         $env->required([
@@ -28,5 +37,24 @@ class Environment
             'DB_PASS',
             'DB_HOST',
         ]);
+    }
+    
+    protected function getEnvFileName()
+    {
+        if (file_exists(base_path('env.php')) && ($filename = include base_path('env.php')) !== 1) {
+            return $filename;
+        }
+        
+        foreach ($this->detectFromServerVars as $var) {
+            if (file_exists(base_path('.env.' . $_SERVER[$var]))) {
+                return '.env.' . $_SERVER[$var];
+            }
+        }
+        
+        if (file_exists(base_path('.env.' . basename(base_path())))) {
+            return '.env.' . basename(base_path());
+        }
+        
+        return '.env';
     }
 }
