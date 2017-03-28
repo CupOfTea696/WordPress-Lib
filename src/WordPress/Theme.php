@@ -20,6 +20,23 @@ class Theme extends Service
         return $root;
     }
     
+    public function getFullSlug($post = null, $parent_separator = '/')
+    {
+        $slug = app('wp.post')->getUrl($post);
+        
+        if ($parent_separator != '/') {
+            $slug = str_replace('/', $parent_separator, $slug);
+        }
+        
+        $slug = trim($slug, $parent_separator);
+        
+        if (! $slug) {
+            return 'home';
+        }
+        
+        return $slug;
+    }
+    
     public function getUri()
     {
         return str_replace($this->app->publicPath(), '', $this->getRoot());
