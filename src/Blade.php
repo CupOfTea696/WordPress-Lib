@@ -4,6 +4,7 @@ namespace CupOfTea\WordPress;
 
 use BadMethodCallException;
 use Illuminate\Support\Str;
+use CupOfTea\Counter\Counter;
 
 class Blade extends Service
 {
@@ -51,6 +52,8 @@ class Blade extends Service
         $this->files = app('files');
         
         $this->factory->addExtension('php', 'blade');
+        $this->factory->share('counter', null);
+        $this->factory->share('__counters', []);
         
         $this->bladeDirectives();
         $this->checkBladeStripsParentheses();
@@ -115,11 +118,9 @@ class Blade extends Service
     
     protected function openStack($type, $params = [])
     {
-        $prev = last($this->stack);
-        
         $item = [
             'type' => $type,
-            'id' => $prev['id'] + 1,
+            'id' => substr(md5(uniqid(mt_rand(), true)), 0, 8),
         ];
         
         $item = array_merge($params, $item);
@@ -202,18 +203,18 @@ class Blade extends Service
                 $id = $this->openStack('wploop', ['rel' => $parent['id'], 'open' => true]);
                 
                 if ($parent['type'] == 'wpposts') {
-                    return "<?php while (have_posts()): the_post(); \$__blade_wp_post_{$id} = \$post = get_post(); ?>";
+                    return "<?php \$__counters[] = \$counter = new " . Counter::class . "(); \$counter->start(); while (have_posts()): the_post(); \$__blade_wp_post_{$id} = \$post = get_post(); ?>";
                 }
                 
                 if ($parent['type'] == 'wpquery') {
-                    return "<?php while (\$__blade_wp_query_{$parent['id']}->have_posts()): \$__blade_wp_query_{$parent['id']}->the_post(); \$__blade_wp_post_{$id} = \$post = \$__blade_wp_query_{$parent['id']}->get_post(); ?>";
+                    return "<?php \$__counters[] = \$counter = new " . Counter::class . "(); \$counter->start(); while (\$__blade_wp_query_{$parent['id']}->have_posts()): \$__blade_wp_query_{$parent['id']}->the_post(); \$__blade_wp_post_{$id} = \$post = \$__blade_wp_query_{$parent['id']}->get_post(); ?>";
                 }
             }
         }
         
         $id = $this->openStack('wploop', ['open' => true]);
         
-        return "<?php if (have_posts()): while (have_posts()): the_post(); \$__blade_wp_post_{$id} = \$post = get_post(); ?>";
+        return "<?php if (have_posts()): \$__counters[] = \$counter = new " . Counter::class . "(); \$counter->start(); while (have_posts()): the_post(); \$__blade_wp_post_{$id} = \$post = get_post(); ?>";
     }
     
     public function compileWpempty()
@@ -239,10 +240,10 @@ class Blade extends Service
                     }
                 }
                 
-                return "<?php endwhile; wp_reset_postdata();{$post} else: ?>";
+                return "<?php \$counter->tick(); endwhile; array_pop(\$__counters); \$counter = last(\$__counters); wp_reset_postdata();{$post} else: ?>";
             }
             
-            return '<?php endwhile; else: ?>';
+            return '<?php $counter->tick(); endwhile; array_pop($__counters); $counter = last($__counters); else: ?>';
         }
         
         return '<?php else: ?>';
@@ -268,10 +269,10 @@ class Blade extends Service
                     }
                 }
                 
-                return "<?php endwhile; wp_reset_postdata();{$post}{$endif} ?>";
+                return "<?php \$counter->tick(); endwhile; array_pop(\$__counters); \$counter = last(\$__counters); wp_reset_postdata();{$post}{$endif} ?>";
             }
             
-            return "<?php endwhile;{$endif} ?>";
+            return "<?php \$counter->tick(); endwhile; array_pop(\$__counters); \$counter = last(\$__counters);{$endif} ?>";
         }
         
         return "<?php{$endif} ?>";
@@ -349,13 +350,13 @@ class Blade extends Service
                     $expression = $parent['expression'];
                 }
                 
-                return "<?php while(have_rows({$expression})): the_row(); ?>";
+                return "<?php \$__counters[] = \$counter = new " . Counter::class . "(); \$counter->start(get_sub_field({$expression}) || get_field({$expression})); while(have_rows({$expression})): the_row(); ?>";
             }
         }
         
         $id = $this->openStack('acfloop', ['open' => true]);
         
-        return "<?php if (have_rows({$expression})): while(have_rows({$expression})): the_row(); ?>";
+        return "<?php if (have_rows({$expression})): \$__counters[] = \$counter = new " . Counter::class . "(); \$counter->start(get_sub_field({$expression}) || get_field({$expression})); while(have_rows({$expression})): the_row(); ?>";
     }
     
     public function compileAcfempty()
@@ -365,7 +366,7 @@ class Blade extends Service
         if ($current['type'] == 'acfloop') {
             $current['open'] = false;
             
-            return '<?php endwhile; else: ?>';
+            return '<?php $counter->tick(); endwhile; array_pop($__counters); $counter = last($__counters); else: ?>';
         }
         
         return '<?php else: ?>';
@@ -378,7 +379,7 @@ class Blade extends Service
         
         $this->closeStack('acfloop');
         
-        $endwhile = $current['open'] ? ' endwhile;' : '';
+        $endwhile = $current['open'] ? ' $counter->tick(); endwhile; array_pop($__counters); $counter = last($__counters);' : '';
         $endif = $parent ? '' : ' endif;';
         
         return "<?php{$endwhile}{$endif} ?>";
