@@ -165,7 +165,7 @@ class Blade extends Service
         
         $iteratee = trim($matches[1]);
         $iteration = trim($matches[2]);
-        $initLoop = "\$loop = new " . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__env->addLoop(\$__currentLoopData);";
         
         return "<?php {$empty} = true; {$initLoop} foreach(\$loop as {$iteration}): {$empty} = false; ?>";
     }
@@ -184,7 +184,7 @@ class Blade extends Service
         
         $iteratee = trim($matches[1]);
         $iteration = trim($matches[2]);
-        $initLoop = "\$loop = new " . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__env->addLoop(\$__currentLoopData);";
         
         return "<?php {$initLoop} foreach(\$loop as {$iteration}): ?>";
     }
@@ -203,7 +203,7 @@ class Blade extends Service
         
         $iteratee = trim($matches[1]);
         $iteration = trim($matches[2]);
-        $initLoop = "\$loop = new " . Counter::class . "(); \$loop->start({$iteratee}); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start({$iteratee}); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
         
         return "<?php {$initLoop} while({$iteration}): ?>";
     }
@@ -259,7 +259,7 @@ class Blade extends Service
     
     public function compileWploop()
     {
-        $initLoop = "\$loop = new " . Counter::class . "(); \$loop->start(); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . '(); $loop->start(); $__currentLoopData = $loop; $__env->addLoop($__currentLoopData);';
         
         if ($parent = $this->lastOfType('wpposts') ?: $parent = $this->lastOfType('wpquery')) {
             $related = [];
@@ -404,7 +404,7 @@ class Blade extends Service
     public function compileAcfloop($expression)
     {
         $expression = $this->normalizeExpression($expression);
-        $initLoop = "\$loop = new " . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
         
         if ($parent = $this->lastOfType('acfrow')) {
             $related = [];
