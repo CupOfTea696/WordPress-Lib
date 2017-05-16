@@ -404,7 +404,6 @@ class Blade extends Service
     public function compileAcfloop($expression)
     {
         $expression = $this->normalizeExpression($expression);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
         
         if ($parent = $this->lastOfType('acfrow')) {
             $related = [];
@@ -426,11 +425,14 @@ class Blade extends Service
                     $expression = $parent['expression'];
                 }
                 
+                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+                
                 return "<?php {$initLoop} while(have_rows({$expression})): the_row(); ?>";
             }
         }
         
         $id = $this->openStack('acfloop', ['open' => true]);
+        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
         
         return "<?php if (have_rows({$expression})): {$initLoop} while(have_rows({$expression})): the_row(); ?>";
     }
