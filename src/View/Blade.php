@@ -1,10 +1,11 @@
 <?php
 
-namespace CupOfTea\WordPress;
+namespace CupOfTea\WordPress\View;
 
 use BadMethodCallException;
 use Illuminate\Support\Str;
 use CupOfTea\Counter\Counter;
+use CupOfTea\WordPress\Service;
 
 class Blade extends Service
 {
@@ -59,6 +60,7 @@ class Blade extends Service
         $this->files = app('files');
         
         $this->factory->addExtension('php', 'blade');
+        $this->factory->share('__loops', new LoopManager);
         
         $this->bladeDirectives();
         $this->checkBladeStripsParentheses();
@@ -165,7 +167,7 @@ class Blade extends Service
         
         $iteratee = trim($matches[1]);
         $iteration = trim($matches[2]);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__loops->addLoop(\$__currentLoopData);";
         
         return "<?php {$empty} = true; {$initLoop} foreach(\$loop as {$iteration}): {$empty} = false; ?>";
     }
@@ -184,7 +186,7 @@ class Blade extends Service
         
         $iteratee = trim($matches[1]);
         $iteration = trim($matches[2]);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->loop({$iteratee}); \$__loops->addLoop(\$__currentLoopData);";
         
         return "<?php {$initLoop} foreach(\$loop as {$iteration}): ?>";
     }
@@ -203,7 +205,7 @@ class Blade extends Service
         
         $iteratee = trim($matches[1]);
         $iteration = trim($matches[2]);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start({$iteratee}); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start({$iteratee}); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
         
         return "<?php {$initLoop} while({$iteration}): ?>";
     }
@@ -215,7 +217,7 @@ class Blade extends Service
      */
     public function compileEndwhile()
     {
-        return '<?php $loop->tick(); endwhile; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>';
+        return '<?php $loop->tick(); endwhile; $__loops->popLoop(); $loop = $__loops->getLastLoop(); ?>';
     }
     
     public function compileWpposts()
@@ -259,7 +261,7 @@ class Blade extends Service
     
     public function compileWploop()
     {
-        $initLoop = '$loop = new ' . Counter::class . '(); $loop->start(); $__currentLoopData = $loop; $__env->addLoop($__currentLoopData);';
+        $initLoop = '$loop = new ' . Counter::class . '(); $loop->start(); $__currentLoopData = $loop; $__loops->addLoop($__currentLoopData);';
         
         if ($parent = $this->lastOfType('wpposts') ?: $parent = $this->lastOfType('wpquery')) {
             $related = [];
@@ -315,10 +317,10 @@ class Blade extends Service
                     }
                 }
                 
-                return "<?php \$loop->tick(); endwhile; \$__env->popLoop(); \$loop = \$__env->getLastLoop(); wp_reset_postdata();{$post} else: ?>";
+                return "<?php \$loop->tick(); endwhile; \$__loops->popLoop(); \$loop = \$__loops->getLastLoop(); wp_reset_postdata();{$post} else: ?>";
             }
             
-            return '<?php $loop->tick(); endwhile; $__env->popLoop(); $loop = $__env->getLastLoop(); else: ?>';
+            return '<?php $loop->tick(); endwhile; $__loops->popLoop(); $loop = $__loops->getLastLoop(); else: ?>';
         }
         
         return '<?php else: ?>';
@@ -344,10 +346,10 @@ class Blade extends Service
                     }
                 }
                 
-                return "<?php \$loop->tick(); endwhile; \$__env->popLoop(); \$loop = \$__env->getLastLoop(); wp_reset_postdata();{$post}{$endif} ?>";
+                return "<?php \$loop->tick(); endwhile; \$__loops->popLoop(); \$loop = \$__loops->getLastLoop(); wp_reset_postdata();{$post}{$endif} ?>";
             }
             
-            return "<?php \$loop->tick(); endwhile; \$__env->popLoop(); \$loop = \$__env->getLastLoop();{$endif} ?>";
+            return "<?php \$loop->tick(); endwhile; \$__loops->popLoop(); \$loop = \$__loops->getLastLoop();{$endif} ?>";
         }
         
         return "<?php{$endif} ?>";
@@ -425,14 +427,14 @@ class Blade extends Service
                     $expression = $parent['expression'];
                 }
                 
-                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
                 
                 return "<?php {$initLoop} while(have_rows({$expression})): the_row(); ?>";
             }
         }
         
         $id = $this->openStack('acfloop', ['open' => true]);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__env->addLoop(\$__currentLoopData);";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) || get_field({$expression})); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
         
         return "<?php if (have_rows({$expression})): {$initLoop} while(have_rows({$expression})): the_row(); ?>";
     }
@@ -444,7 +446,7 @@ class Blade extends Service
         if ($current['type'] == 'acfloop') {
             $current['open'] = false;
             
-            return '<?php $loop->tick(); endwhile; $__env->popLoop(); $loop = $__env->getLastLoop(); else: ?>';
+            return '<?php $loop->tick(); endwhile; $__loops->popLoop(); $loop = $__loops->getLastLoop(); else: ?>';
         }
         
         return '<?php else: ?>';
@@ -457,7 +459,7 @@ class Blade extends Service
         
         $this->closeStack('acfloop');
         
-        $endwhile = $current['open'] ? ' $loop->tick(); endwhile; $__env->popLoop(); $loop = $__env->getLastLoop();' : '';
+        $endwhile = $current['open'] ? ' $loop->tick(); endwhile; $__loops->popLoop(); $loop = $__loops->getLastLoop();' : '';
         $endif = $parent ? '' : ' endif;';
         
         return "<?php{$endwhile}{$endif} ?>";

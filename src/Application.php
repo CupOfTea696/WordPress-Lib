@@ -197,7 +197,7 @@ class Application extends Container implements PackageContract
     protected function registerCoreServices()
     {
         $this->registerServices([
-            'blade' => 'CupOfTea\WordPress\Blade',
+            'blade' => 'CupOfTea\WordPress\View\Blade',
             'wp' => [
                 '_self' => 'CupOfTea\WordPress\WordPress',
                 'page' => 'CupOfTea\WordPress\WordPress\Page',
