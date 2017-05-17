@@ -42,6 +42,16 @@ class ReadConfiguration
         foreach ($this->getConfigurationFiles($app) as $key => $path) {
             $config->set($key, require $path);
         }
+        
+        foreach ($this->getThemeConfigurationFiles($app) as $key => $path) {
+            if ($config->has($key)) {
+                $values = require $path;
+                
+                $config->set($key, array_merge($config->get($key), $values));
+            } else {
+                $config->set($key, require $path);
+            }
+        }
     }
     
     /**
@@ -64,6 +74,28 @@ class ReadConfiguration
     }
     
     /**
+     * Get all of the configuration files for the theme.
+     *
+     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @return array
+     */
+    protected function getThemeConfigurationFiles(Container $app)
+    {
+        $files = [];
+        $config_path = $app->make('config')->get('theme.config_path', realpath($app->make('wp.theme')->getRoot()) . '/config');
+        
+        if (file_exists($config_path) && is_dir($config_path)) {
+            foreach (Finder::create()->files()->name('*.php')->in($config_path) as $file) {
+                $nesting = $this->getThemeConfigurationNesting($file, $config_path);
+                
+                $files[$nesting . basename($file->getRealPath(), '.php')] = $file->getRealPath();
+            }
+        }
+        
+        return $files;
+    }
+    
+    /**
      * Get the configuration file nesting path.
      *
      * @param  \Symfony\Component\Finder\SplFileInfo  $file
@@ -74,6 +106,23 @@ class ReadConfiguration
         $directory = dirname($file->getRealPath());
         
         if ($tree = trim(str_replace(config_path(), '', $directory), DIRECTORY_SEPARATOR)) {
+            $tree = str_replace(DIRECTORY_SEPARATOR, '.', $tree) . '.';
+        }
+        
+        return $tree;
+    }
+    
+    /**
+     * Get the theme configuration file nesting path.
+     *
+     * @param  \Symfony\Component\Finder\SplFileInfo  $file
+     * @return string
+     */
+    private function getThemeConfigurationNesting(SplFileInfo $file, $config_path)
+    {
+        $directory = dirname($file->getRealPath());
+        
+        if ($tree = trim(str_replace($config_path, '', $directory), DIRECTORY_SEPARATOR)) {
             $tree = str_replace(DIRECTORY_SEPARATOR, '.', $tree) . '.';
         }
         

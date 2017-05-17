@@ -14,7 +14,13 @@ class RegisterServices
      */
     public function bootstrap(Container $app)
     {
-        foreach (config('app.services') as $key => $services) {
+        foreach ($app->make('config')->get('app.services') as $key => $services) {
+            foreach ((array) $services as $service) {
+                $app->alias($key, $service);
+            }
+        }
+        
+        foreach ($app->make('config')->get('app.theme.services', []) as $key => $services) {
             foreach ((array) $services as $service) {
                 $app->alias($key, $service);
             }

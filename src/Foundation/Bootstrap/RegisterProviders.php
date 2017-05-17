@@ -14,7 +14,11 @@ class RegisterProviders
      */
     public function bootstrap(Container $app)
     {
-        foreach (config('app.providers') as $provider) {
+        foreach ($app->make('config')->get('app.providers') as $provider) {
+            $app->register(new $provider($app));
+        }
+        
+        foreach ($app->make('config')->get('app.theme.providers', []) as $provider) {
             $app->register(new $provider($app));
         }
     }
