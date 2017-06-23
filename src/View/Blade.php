@@ -476,7 +476,7 @@ class Blade extends Service
     public function compileElseacflayout($expression)
     {
         $expression = $this->normalizeExpression($expression);
-        $current = $this->lastOfType('acfrow');
+        $current = $this->lastOfType('acflayout');
         
         return "<?php elseif (\$__acf_layout_{$current['id']} == {$expression}): ?>";
     }
