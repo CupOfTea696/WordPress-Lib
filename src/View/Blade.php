@@ -99,7 +99,7 @@ class Blade extends Service
         $compiled = $this->blade->getCompiledPath(__FILE__);
         
         if ($this->blade->isExpired(__FILE__)) {
-            $this->files->put($compiled, '<?php echo $__view->render(); ?>');
+            $this->files->put($compiled, '<?php global $__view; echo $__view->render(); ?>');
         }
         
         return $compiled;
