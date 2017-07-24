@@ -33,17 +33,22 @@ class Post extends Service
         return $postsUrl;
     }
     
-    public function getThumbnailUrl($size = 'thumbnail', $post = null)
+    public function getThumbnailUrl($size = 'post-thumbnail', $post = null)
     {
         return $this->getFeaturedImageUrl($size, $post);
     }
     
     public function getFeaturedImageUrl($size = 'full', $post = null)
     {
+        return get_the_post_thumbnail_url($post, $size);
+    }
+    
+    public function getFeaturedImage($post = null, $unfiltered = false)
+    {
         $post = $this->post($post);
-        $img_id = get_post_thumbnail_id($post->ID);
+        $imgId = get_post_thumbnail_id($post->ID);
         
-        return wp_get_attachment_image_src($img_id, $size)[0];
+        return wp_get_attachment_metadata($imgId, $unfiltered);
     }
     
     public function hasParent($post = null)
