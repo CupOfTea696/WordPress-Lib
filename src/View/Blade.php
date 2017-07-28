@@ -203,9 +203,10 @@ class Blade extends Service
         
         preg_match('/ *(.*?) *(?:, *(.*))? *$/is', $expression, $matches);
         
-        $iteratee = trim($matches[1]);
-        $iteration = trim($matches[2]);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start({$iteratee}); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
+        $iteration = isset($matches[2]) ? trim($matches[1]) : $expression;
+        $length = isset($matches[2]) ? trim($matches[2]) : '';
+        
+        $initLoop = '$loop = new ' . Counter::class . "(); \$__currentLoopData = \$loop->start({$length}); \$__loops->addLoop(\$__currentLoopData);";
         
         return "<?php {$initLoop} while({$iteration}): ?>";
     }
