@@ -38,6 +38,10 @@ class WordPress extends Service
             return get_term($post, $term);
         }
         
+        if (is_home() && is_front_page()) {
+            return '';
+        }
+        
         return object_get($post = $this->post($post), 'post_name', $post->name);
     }
     
@@ -87,7 +91,9 @@ class WordPress extends Service
             array_push($segments, $base, $page);
         }
         
-        return '/' . implode('/', $segments) . '/';
+        $url = implode('/', array_filter($segments));
+        
+        return '/' . ($url ? $url . '/' : '');
     }
     
     // TODO: This looks horrendous, can it be simplified?
