@@ -2,9 +2,7 @@
 
 namespace CupOfTea\WordPress\View;
 
-use BadMethodCallException;
 use Illuminate\Support\Arr;
-use CupOfTea\Counter\Counter;
 
 class LoopManager
 {
