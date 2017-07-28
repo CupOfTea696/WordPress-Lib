@@ -3,12 +3,13 @@
 namespace CupOfTea\WordPress\View;
 
 use Illuminate\Support\Arr;
+use CupOfTea\Counter\Counter;
 
 class LoopManager
 {
     protected $loops = [];
     
-    public function addLoop($loop)
+    public function addLoop(Counter $loop)
     {
         $parent = Arr::last($this->loops);
         
