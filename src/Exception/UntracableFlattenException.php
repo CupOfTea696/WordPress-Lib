@@ -8,13 +8,13 @@ class UntracableFlattenException extends FlattenException
 {
     public function toArray()
     {
-        $exceptions = array();
-        foreach (array_merge(array($this), $this->getAllPrevious()) as $exception) {
-            $exceptions[] = array(
+        $exceptions = [];
+        foreach (array_merge([$this], $this->getAllPrevious()) as $exception) {
+            $exceptions[] = [
                 'message' => $exception->getMessage(),
                 'class' => $exception->getClass(),
                 'trace' => [],
-            );
+            ];
         }
         
         return $exceptions;
@@ -22,11 +22,11 @@ class UntracableFlattenException extends FlattenException
     
     public function setTraceFromException(\Exception $exception)
     {
-        $this->trace = array();
+        $this->trace = [];
     }
     
     public function setTrace($trace, $file, $line)
     {
-        $this->trace = array();
+        $this->trace = [];
     }
 }

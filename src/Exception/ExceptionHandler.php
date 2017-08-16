@@ -8,7 +8,7 @@ class ExceptionHandler extends SymfonyExceptionHandler
 {
     public function sendPhpResponse($exception)
     {
-        if (!$exception instanceof FlattenException) {
+        if (! $exception instanceof FlattenException) {
             $exception = UntracableFlattenException::create($exception);
         }
         
@@ -24,7 +24,7 @@ class ExceptionHandler extends SymfonyExceptionHandler
      */
     public function getHtml($exception)
     {
-        if (!$exception instanceof FlattenException) {
+        if (! $exception instanceof FlattenException) {
             $exception = UntracableFlattenException::create($exception);
         }
         
