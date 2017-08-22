@@ -2,6 +2,9 @@
 
 namespace CupOfTea\WordPress;
 
+use WP_Term;
+use WP_User;
+use WP_Post_Type;
 use CupOfTea\WordPress\Traits\AccessesPost;
 
 class WordPress extends Service
@@ -85,7 +88,26 @@ class WordPress extends Service
     
     protected function getPaginationLink($base, $page)
     {
-        $segments = [$this->getSlug()];
+        $queried = get_queried_object();
+        $segments = [];
+        
+        if ($queried instanceof WP_Term) {
+            $segments[] = trim($this->getRelativeUrl(get_term_link($queried)), '/');
+        } elseif ($queried instanceof WP_Post_Type && isset($queried->rewrite['slug'])) {
+            $segments[] = $queried->rewrite['slug'];
+        } elseif ($queried instanceof WP_User) {
+            $segments[] = trim($this->getRelativeUrl(get_author_posts_url($queried->ID, $queried->data->user_nicename)), '/');
+        } elseif (is_date()) {
+            $y = get_the_date('Y');
+            
+            if (is_year()) {
+                $segments[] = trim($this->getRelativeUrl(get_year_link($y)), '/');
+            } elseif (is_month()) {
+                $segments[] = trim($this->getRelativeUrl(get_month_link($y, get_the_date('n'))), '/');
+            } else {
+                $segments[] = trim($this->getRelativeUrl(get_day_link($y, get_the_date('n'), get_the_date('j'))), '/');
+            }
+        }
         
         if ($page > 1) {
             array_push($segments, $base, $page);
