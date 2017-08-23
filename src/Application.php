@@ -184,11 +184,11 @@ class Application extends Container implements PackageContract
         $aliases = [
             'app' => ['Illuminate\Container\Container', 'Illuminate\Contracts\Container\Container'],
             'config' => ['Illuminate\Config\Repository', 'Illuminate\Contracts\Config\Repository'],
-            'log' => 'Psr\Log\LoggerInterface',
+            'log' => ['Psr\Log\LoggerInterface'],
         ];
         
         foreach ($aliases as $key => $aliases) {
-            foreach ((array) $aliases as $alias) {
+            foreach ($aliases as $alias) {
                 $this->alias($key, $alias);
             }
         }
@@ -324,7 +324,7 @@ class Application extends Container implements PackageContract
      */
     protected function registerLogBindings()
     {
-        $this->singleton('Psr\Log\LoggerInterface', function () {
+        $this->singleton('log', function () {
             return new Logger('wordpress', [$this->getMonologHandler()]);
         });
     }
