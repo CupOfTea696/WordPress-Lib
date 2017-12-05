@@ -13,7 +13,7 @@ class Loop
     
     protected $parent;
     
-    public function __construct(Counter $loop, Loop $parent = null, $depth = 1)
+    public function __construct(Counter $loop, self $parent = null, $depth = 1)
     {
         $this->loop = $loop;
         $this->depth = $depth;
