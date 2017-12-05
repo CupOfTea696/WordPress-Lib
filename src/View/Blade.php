@@ -303,6 +303,8 @@ class Blade extends Service
             $current['open'] = false;
             $parent = ! empty($current['rel']) ? $this->get($current['rel']) : false;
             
+            $this->setLast($this->stack, $current);
+            
             if ($parent && $parent['type'] == 'wpquery') {
                 $post = '';
                 
@@ -501,9 +503,14 @@ class Blade extends Service
         return false;
     }
     
-    private function &last($array)
+    private function last($array)
     {
         return $array[count($array) - 1];
+    }
+    
+    private function setLast($array, $item)
+    {
+        $array[count($array) - 1] = $item;
     }
     
     private function lastOfType($type)
