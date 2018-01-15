@@ -394,9 +394,9 @@ class Blade extends Service
     {
         $expression = $this->normalizeExpression($expression);
         
-        $this->openStack('acfrow', ['expression' => $expression]);
+        $id = $this->openStack('acfrow', ['expression' => $expression]);
         
-        return "<?php if (have_rows({$expression})): ?>";
+        return "<?php \$__acfLoops['{$id}'] = get_sub_field({$expression}) ?: get_field({$expression}); if (have_rows({$expression})): ?>";
     }
     
     public function compileEndacfrow()
@@ -430,16 +430,17 @@ class Blade extends Service
                     $expression = $parent['expression'];
                 }
                 
-                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) ?: get_field({$expression})); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
+                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(\$__acfLoops['{$id}']); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
                 
                 return "<?php {$initLoop} while(have_rows({$expression})): the_row(); ?>";
             }
         }
         
         $id = $this->openStack('acfloop', ['open' => true]);
-        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(get_sub_field({$expression}) ?: get_field({$expression})); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
+        $initAcfLoop = "\$__acfLoops['{$id}'] = get_sub_field({$expression}) ?: get_field({$expression});";
+        $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(\$__acfLoops['{$id}']); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
         
-        return "<?php if (have_rows({$expression})): {$initLoop} while(have_rows({$expression})): the_row(); ?>";
+        return "<?php {$initAcfLoop} if (have_rows({$expression})): {$initLoop} while(have_rows({$expression})): the_row(); ?>";
     }
     
     public function compileAcfempty()
