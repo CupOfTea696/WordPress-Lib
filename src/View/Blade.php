@@ -424,13 +424,14 @@ class Blade extends Service
             }
             
             if (count($related) == 0) {
-                $id = $this->openStack('acfloop', ['rel' => $parent['id'], 'open' => true]);
+                $rel = $parent['id'];
+                $id = $this->openStack('acfloop', ['rel' => $rel, 'open' => true]);
                 
                 if (! $expression) {
                     $expression = $parent['expression'];
                 }
                 
-                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(\$__acfLoops['{$id}']); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
+                $initLoop = '$loop = new ' . Counter::class . "(); \$loop->start(\$__acfLoops['{$rel}']); \$__currentLoopData = \$loop; \$__loops->addLoop(\$__currentLoopData);";
                 
                 return "<?php {$initLoop} while(have_rows({$expression})): the_row(); ?>";
             }
